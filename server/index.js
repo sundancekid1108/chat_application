@@ -1,26 +1,31 @@
 const http = require('http');
 const express = require('express');
-const io = require('socket.io');
+const socketio = require('socket.io');
 const router = require('./router');
 
 const app = express();
 const server = http.createServer(app);
-const socketioServer = io(server);
+const socketioServer = socketio(server);
 
 const PORT = process.env.PORT || 5000;
 
 app.use(router);
 
 socketioServer.on('connection', (socket) => {
-    // console.log("new connection!!");
-    // socket.on('disconnect', () => {
-    //     console.log('disconnected');
-    // });
-    socket.emit('init', ('Hello!!'));
+    console.log("new connection!!");
 
-    socket.on('SEND_MESSAGE', (data) => {
-        console.log(data);
-        socketioServer.emit('RECEIVE_MESSAGE', data);
+    socket.emit('message', ('Hi There!!'));
+
+    socket.broadcast.emit('message', 'New user has joined!');
+
+    socket.on('disconnect', () => {
+        socket.emit('message', ('User has left!!'));
+    });
+    
+    socket.on('sendMessage', (message, callback) => {
+        console.log(message);
+        socket.emit('receiveMessage', message);
+        callback();
     });
 });
 

@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import io from 'socket.io-client';
 import Message from '../Message/Message';
 
@@ -8,24 +8,32 @@ const Chat = () => {
     const [message, setMessage] = useState('');
     const [messages, setMessages] = useState([]);
 
-    socket.on('RECEIVE_MESSAGE', (data) => {
-        setMessages([...messages, data]);
-    });
+    useEffect(() => {
+        socket.on('enter', (welcomeMessage) => {
+            console.log(welcomeMessage);
+        });
 
-    socket.on('INIT', (data) => {
-        console.log(data);
-    });
+        socket.on('receiveMessage', (message) => {
+            console.log('receiveMessage', message);
+            setMessages([...messages], message);
+        });
 
-    const handleChange = (event) => {
-        setMessage(event.target.value);
-    }
+        return () => {
+            socket.off('receiveMessage');
+        }
+    }, [messages]);
 
-    const sendMessage = (event) =>{
+    const sendMessage = ( event ) => {
         event.preventDefault();
-        socket.emit('SEND_MESSAGE', message);
+        socket.emit('sendMessage', message, () => {
+            console.log('Message is sended well!');
+        });
         setMessage('');
-    }
+    };
 
+    const handleChange = ({ target: { value } }) => {
+        setMessage(value);
+    };
 
     return(
         <>
@@ -37,8 +45,8 @@ const Chat = () => {
                 </div>
         
                 <form className="form">
-                    <input id="commonSearchTerm" type="text" placeholder="Message" value={message} onChange={handleChange} />
-                    <button id="searchButton" type="submit" onClick={sendMessage}>Send</button>
+                    <input class="input is-large" id="commonSearchTerm" type="text" placeholder="Message" value={message} onChange={handleChange} />
+                    <button class="button is-light" id="searchButton" type="submit" onClick={sendMessage}>Send</button>
                 </form>
                 </div>
             </div>
