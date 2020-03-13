@@ -1,26 +1,35 @@
 import React, {useState, useEffect} from 'react';
-import io from 'socket.io-client';
+import socketIoClient from 'socket.io-client';
+import queryString from 'query-string';
 import Message from '../Message/Message';
 
-const socket = io('localhost:5000');
+import { Container, Paper, Input, Button } from '@material-ui/core';
 
-const Chat = () => {
+import './Chat.css';
+
+let socket;
+
+const Chat = ({ location }) => {
     const [message, setMessage] = useState('');
     const [messages, setMessages] = useState([]);
+    const ENDPOINT = 'localhost:5000';
+    
+    useEffect(() => {
+        const params = queryString.parse(location.search);
+        console.log('params', params);
+        socket = socketIoClient(ENDPOINT);
+        socket.emit('join', params);
+        console.log('[REACH INITIALIZATION USE EFFECT]');
+    }, [ENDPOINT, location.search]);
 
     useEffect(() => {
-        socket.on('enter', (welcomeMessage) => {
-            console.log(welcomeMessage);
+        socket.on('message', (message) => {
+            setMessages([...messages, message]);
         });
 
-        socket.on('receiveMessage', (message) => {
-            console.log('receiveMessage', message);
-            setMessages([...messages], message);
-        });
+        console.log('[REACH EVENTS USE EFFECT]');
 
-        return () => {
-            socket.off('receiveMessage');
-        }
+        return () => { socket.off();}
     }, [messages]);
 
     const sendMessage = ( event ) => {
@@ -31,25 +40,20 @@ const Chat = () => {
         setMessage('');
     };
 
-    const handleChange = ({ target: { value } }) => {
-        setMessage(value);
-    };
-
     return(
         <>
-            <div className="container">
-                <div className="rectangle">
-                <div className="messages">
-                    <h1>Messages</h1>
-                    {messages.map((message, i) => <Message key={i} message={message} />)}
-                </div>
+            <Container className="container">
+                <Paper elevation={6} className="paper">
+                    <div className="messages">
+                        {messages.map((message, i) => <Message key={i} message={message} />)}
+                    </div>
         
-                <form className="form">
-                    <input class="input is-large" id="commonSearchTerm" type="text" placeholder="Message" value={message} onChange={handleChange} />
-                    <button class="button is-light" id="searchButton" type="submit" onClick={sendMessage}>Send</button>
-                </form>
-                </div>
-            </div>
+                    <form className="form">
+                        <Input className="input" fullWidth type="text" placeholder="Message" value={message} onChange={({ target: { value } }) => setMessage(value)} />
+                        <Button color="primary" variant="outlined" fullWidth type="submit" onClick={sendMessage}>Send</Button>
+                    </form>
+                </Paper>
+            </Container>
         </>
     );
 };

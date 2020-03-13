@@ -13,19 +13,22 @@ app.use(router);
 
 socketioServer.on('connection', (socket) => {
     console.log("new connection!!");
+    
+    socket.on('join', ({name, room}) => {
+        socket.join(room);
+        socket.emit('message', `${name}, Welcome to room ${room}.`);
+        socket.broadcast.to(room).emit('message', `${name} has joined!`);
+    });
 
-    socket.emit('message', ('Hi There!!'));
-
-    socket.broadcast.emit('message', 'New user has joined!');
+    socket.on('sendMessage', (message, callback) => {
+        console.log('REACH SEND MESSAGE');
+        socketioServer.emit('message', message);
+        socket.to('test').emit('message', message);
+        callback();
+    });
 
     socket.on('disconnect', () => {
-        socket.emit('message', ('User has left!!'));
-    });
-    
-    socket.on('sendMessage', (message, callback) => {
-        console.log(message);
-        socket.emit('receiveMessage', message);
-        callback();
+        socketioServer.emit('message', 'User has left!!');
     });
 });
 
