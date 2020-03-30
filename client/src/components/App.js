@@ -6,7 +6,7 @@ import Join from './Join/Join';
 const App = () => {
     return(
         <Router>
-            <Route path="/join" exact component={Join} />
+            <Route path="/" exact component={Join} />
             <Route path="/chat" component={Chat} />
         </Router>
     );

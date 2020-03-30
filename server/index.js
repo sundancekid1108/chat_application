@@ -2,6 +2,7 @@ const http = require('http');
 const express = require('express');
 const socketio = require('socket.io');
 const router = require('./router');
+const { addUser, deleteUser, getUser, getUsersInRoom } = require('./users');
 
 const app = express();
 const server = http.createServer(app);
@@ -14,21 +15,34 @@ app.use(router);
 socketioServer.on('connection', (socket) => {
     console.log("new connection!!");
     
-    socket.on('join', ({name, room}) => {
+    socket.on('join', ({name, room}, callback) => {
+        const { error, user } = addUser({ id: socket.id, name, room });
+        if( error ){
+            console.log(error);
+            return callback(error);     
+        }
         socket.join(room);
-        socket.emit('message', `${name}, Welcome to room ${room}.`);
-        socket.broadcast.to(room).emit('message', `${name} has joined!`);
+        socket.emit('message',  { user: 'Admin', text : `${name}, welcome to room ${room}.`});
+        socket.broadcast.to(user.room).emit('message', {user: 'Admin', text: `${name} has joined!` });
+        socketioServer.to(user.room).emit('roomData', {room: user.room, users: getUsersInRoom(user.room)});
+        callback();
     });
 
     socket.on('sendMessage', (message, callback) => {
-        console.log('REACH SEND MESSAGE');
-        socketioServer.emit('message', message);
-        socket.to('test').emit('message', message);
+        const user = getUser(socket.id);
+        console.dir(user);
+        console.log(user.room);
+        socketioServer.to(user.room).emit('message', { user: user.name, text: message });
         callback();
     });
 
     socket.on('disconnect', () => {
-        socketioServer.emit('message', 'User has left!!');
+        const user = deleteUser(socket.id);
+        if(user){
+            socketioServer.to(user.room).emit('message', { user: 'Admin', text: `${user.name} has left.` });
+            socketioServer.to(user.room).emit('roomData', { room: user.room, users: getUsersInRoom(user.room)});
+        }
+        
     });
 });
 

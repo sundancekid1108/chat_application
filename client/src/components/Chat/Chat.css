@@ -1,32 +1,47 @@
+html,
 body {
+    padding: 0;
+    margin: 0;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+.outerContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     height: 100vh;
 }
 
 .container {
-    height: 100vh;
+    background: #FFFFFF;
+    box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.10);
+    border-radius: 8px 8px 0 0;
     display: flex;
-    align-items: center;
-    justify-content: center;
+    height: 60%;
+    width: 35%;
+    flex-direction: column;
+    justify-content: space-between
 }
 
-.paper {
+.textContainer {
     display: flex;
-    padding: 20px;
     flex-direction: column;
-    justify-content: space-between;
-    align-items: center;
-    min-height: 50%;
-    width: 60%;
+    margin-left: 100px;
+    color: white;
+    height: 60%;
 }
 
 .messages {
-    width: 80%;
+    margin: 5%;
+    flex: auto;
 }
 
-.form {
-    width: 80%;
-}
-
-.input {
-    margin-bottom: 10px;
+@media (min-width: 320px) and (max-width: 480px) {
+    .container {
+        width: 100%;
+        height: 100%;
+    }
 }
