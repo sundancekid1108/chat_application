@@ -1,6 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import socketIoClient from 'socket.io-client';
 import queryString from 'query-string';
+import TextContainer from '../TextContainer/TextContainer';
 import Messages from '../Messages/Messages';
 import InfoBar from '../InfoBar/InfoBar';
 import Input from '../Input/Input';
@@ -30,41 +31,30 @@ const Chat = ({ location }) => {
     }, [ENDPOINT, location.search]);
 
     useEffect(() => {
-        socket.on('message', (message) => {
-            setMessages([...messages, message ]);
+        socket.on('message', message => {
+          setMessages(messages => [ ...messages, message ]);
         });
-
-        socket.on('roomData', ({room, users}) => {
-            console.log(room, users);
-            setUsers(users);
+        
+        socket.on("roomData", ({ users }) => {
+          setUsers(users);
         });
-      
-        return () => {
-            socket.emit('disconnect');
-            socket.off();
-        }
-    }, [messages]);
+    }, []);
 
     const sendMessage = ( event ) => {
         event.preventDefault();
-        socket.emit('sendMessage', message, () => setMessage(''));
+        if(message) {
+            socket.emit('sendMessage', message, () => setMessage(''));
+        }
     };
 
-    return(
+    return (
         <div className="outerContainer">
             <div className="container">
                 <InfoBar room={room} />
                 <Messages messages={messages} name={name} />
-                <Input sendMessage={sendMessage} setMessage={setMessage} message={message} />
+                <Input message={message} setMessage={setMessage} sendMessage={sendMessage} />
             </div>
-            <div className="textContainer">
-                <h1>실시간 채팅앱 💬</h1>
-                <h2>Made with Socket.IO ❤️</h2>
-                <h2>Try it out right now! ⬅️</h2>
-                {
-                    users ? <h2>Currently in this room: {users.map(({name}) => <div>{name}</div>)}</h2> : null
-                }
-            </div>
+            <TextContainer users={users}/>
         </div>
     );
 };

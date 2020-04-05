@@ -4,7 +4,7 @@ import closeIcon from '../../Icons/closeIcon.png';
 
 import './InfoBar.css';
 
-const InfoBar = ({room, disconnect}) => {
+const InfoBar = ({room}) => {
     return(
             <div className="infoBar">
                 <div className="leftInnerContainer">
@@ -12,7 +12,7 @@ const InfoBar = ({room, disconnect}) => {
                     <h2>{room}</h2>
                 </div>
                 <div className="rightInnerContainer">
-                    <a href="/"><img src={closeIcon} alt="close icon" /></a>
+                <a href="/"><img src={closeIcon} alt="close icon" /></a>
                 </div>
             </div>
     );
