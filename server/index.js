@@ -8,7 +8,6 @@ const { addUser, deleteUser, getUser, getUsersInRoom } = require('./users');
 const app = express();
 const server = http.createServer(app);
 const socketioServer = socketio(server);
-
 const PORT = process.env.PORT || 5000;
 
 app.use(cors);
